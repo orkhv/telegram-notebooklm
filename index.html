@@ -439,6 +439,25 @@
       display: none;
     }
 
+    .primary-action {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .primary-action-btn {
+      padding-inline: 18px;
+      padding-block: 9px;
+      font-size: 13px;
+    }
+
+    .primary-action-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
     .side-card {
       background: #020617;
       border-radius: 16px;
@@ -718,22 +737,22 @@
           </div>
           <div class="title">Локальный конвертер чатов Telegram</div>
           <div class="subtitle">
-            Загрузите <code>result.json</code> из Telegram Desktop и получите <strong>единый Markdown-файл</strong> для всех чатов,
-            автоматически разбитый на части по ~300&nbsp;000 слов под загрузку в NotebookLM / LLM.
+            Загрузите файл <code>result.json</code> из Telegram Desktop — на выходе получите
+            <strong>Markdown с историей чатов</strong>, при необходимости автоматически разбитый на несколько файлов.
           </div>
           <div class="badge-row">
-            <div class="badge"><strong>Локально</strong> · без отправки данных на сервер</div>
-            <div class="badge">Формат: <strong>Markdown / TXT</strong></div>
+            <div class="badge"><strong>Локально</strong> · ничего не уходит в сеть</div>
+            <div class="badge">Результат: <strong>.md файлы</strong></div>
           </div>
         </div>
         <div class="header-aside">
           <div class="pill-status">
             <span class="pill-status-dot"></span>
-            Обработка на вашей машине
+            Конвертация только на вашем компьютере
           </div>
           <div class="hint-text">
-            Экспортируйте чаты из Telegram Desktop<br />
-            в формате <code>result.json</code>.
+            В Telegram Desktop экспортируйте чат<br />
+            и сохраните файл <code>result.json</code>.
           </div>
         </div>
       </header>
@@ -765,11 +784,21 @@
         <div class="status-left">
           <span class="status-dot" aria-hidden="true"></span>
           <span class="status-label">Статус:</span>
-          <span class="status-value" id="statusText">ожидаю файл Telegram</span>
+          <span class="status-value" id="statusText">ожидаю файл из Telegram</span>
         </div>
         <div class="status-right">
           <span class="status-tag" id="chatsCountTag">чаты: 0</span>
           <span class="status-tag status-tag-accent" id="messagesCountTag">сообщений: 0</span>
+        </div>
+      </div>
+
+      <div class="primary-action">
+        <button id="exportMainBtn" type="button" class="button button-primary primary-action-btn" disabled>
+          <span class="button-icon">⇩</span>
+          Скачать Markdown
+        </button>
+        <div class="primary-action-hint">
+          После загрузки <code>result.json</code> будет создан один или несколько .md файлов с вашими чатами.
         </div>
       </div>
     </div>
@@ -839,6 +868,7 @@
     const exportSelectedBtn = document.getElementById("exportSelectedBtn");
     const exportAllBtn = document.getElementById("exportAllBtn");
     const logEl = document.getElementById("log");
+    const exportMainBtn = document.getElementById("exportMainBtn");
 
     function log(message, isError) {
       const time = new Date().toLocaleTimeString();
@@ -1185,7 +1215,8 @@
       messagesCountTag.textContent = "сообщений: 0";
       exportSelectedBtn.disabled = true;
       exportAllBtn.disabled = true;
-      setStatus("ожидаю файл Telegram");
+      if (exportMainBtn) exportMainBtn.disabled = true;
+      setStatus("ожидаю файл из Telegram");
     }
 
     function handleParsedJson(obj, fileName) {
@@ -1193,10 +1224,11 @@
         chats = parseTelegramJson(obj);
         rawData = obj;
         sourceFileName = fileName || null;
-        setStatus("файл загружен: " + fileName);
+        setStatus("файл загружен, можно конвертировать");
         fileInfoEl.textContent = "Файл: " + fileName + " · чатов: " + chats.length;
-        log("Успешно разобран файл " + fileName + ". Найдено чатов: " + chats.length + ".", false);
+        log("Файл " + fileName + " успешно прочитан. Найдено чатов: " + chats.length + ".", false);
         renderChatsList();
+        if (exportMainBtn) exportMainBtn.disabled = chats.length === 0;
       } catch (e) {
         resetState();
         setStatus("ошибка при чтении JSON");
@@ -1273,6 +1305,9 @@
 
     exportSelectedBtn.addEventListener("click", exportSelectedChat);
     exportAllBtn.addEventListener("click", exportCombinedChats);
+    if (exportMainBtn) {
+      exportMainBtn.addEventListener("click", exportCombinedChats);
+    }
 
     log("Готов к работе. Загрузите result.json из Telegram Desktop.");
   })();
