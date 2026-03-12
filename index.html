@@ -958,10 +958,25 @@
     }
 
     function parseTelegramJson(obj) {
-      if (!obj || !obj.chats || !Array.isArray(obj.chats.list)) {
-        throw new Error("Не найдена структура chats.list в JSON.");
+      if (!obj || typeof obj !== "object") {
+        throw new Error("Некорректный JSON: ожидается объект.");
       }
-      var list = obj.chats.list;
+
+      var list = null;
+
+      // Вариант 1: полный экспорт нескольких чатов: { chats: { list: [...] } }
+      if (obj.chats && Array.isArray(obj.chats.list)) {
+        list = obj.chats.list;
+      }
+      // Вариант 2: экспорт одного чата: { name, id, type, messages: [...] }
+      else if (Array.isArray(obj.messages)) {
+        list = [obj];
+      }
+
+      if (!list) {
+        throw new Error("Не найдены чаты: ожидается либо chats.list, либо объект с полем messages.");
+      }
+
       var result = [];
 
       list.forEach(function (chat, idx) {
