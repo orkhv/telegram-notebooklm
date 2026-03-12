@@ -1,0 +1,1245 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Telegram → NotebookLM (локально)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root {
+      color-scheme: dark light;
+      --bg: #050816;
+      --bg-elevated: #0f172a;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.08);
+      --accent-strong: rgba(56, 189, 248, 0.25);
+      --border-subtle: rgba(148, 163, 184, 0.35);
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --danger: #f97373;
+      --radius-lg: 18px;
+      --shadow-soft: 0 22px 45px rgba(15, 23, 42, 0.65);
+      --shadow-subtle: 0 1px 0 rgba(148, 163, 184, 0.35);
+      --input-bg: rgba(15, 23, 42, 0.9);
+      --transition-fast: 0.16s ease-out;
+      --transition-med: 0.22s ease-out;
+      --font-ui: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-ui);
+      color: var(--text-main);
+      background:
+        radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.18), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(129, 140, 248, 0.18), transparent 55%),
+        radial-gradient(circle at 100% 0%, rgba(248, 250, 252, 0.05), transparent 50%),
+        linear-gradient(160deg, #020617, #020617 40%, #020617 100%);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 1120px;
+      margin: 32px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 880px) {
+      .page {
+        grid-template-columns: minmax(0, 1fr);
+        margin-top: 20px;
+      }
+    }
+
+    .card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+      border-radius: 26px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(18px) saturate(140%);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.45), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.4), transparent 55%);
+      mix-blend-mode: soft-light;
+      opacity: 0.35;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+      padding: 22px 22px 20px;
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .logo-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      box-shadow: var(--shadow-subtle);
+      width: fit-content;
+    }
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #e0f2fe, #38bdf8);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.6), 0 0 18px rgba(56, 189, 248, 0.8);
+    }
+
+    .pill-text {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #cbd5f5;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 620;
+      letter-spacing: -0.02em;
+      color: #e5e7eb;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 540px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.92));
+      color: #cbd5f5;
+    }
+
+    .badge strong {
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .header-aside {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .pill-status {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(22, 163, 74, 0.12);
+      color: #bbf7d0;
+      border: 1px solid rgba(34, 197, 94, 0.5);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pill-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #bbf7d0, #22c55e);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.7), 0 0 12px rgba(34, 197, 94, 0.8);
+    }
+
+    .hint-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .hint-text code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 8px;
+      padding: 2px 5px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: #e5e7eb;
+    }
+
+    .dropzone {
+      margin-top: 6px;
+      padding: 18px 18px 16px;
+      border-radius: 22px;
+      border: 1px dashed rgba(148, 163, 184, 0.75);
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.94)),
+        radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.35), transparent 55%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      cursor: pointer;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast), background var(--transition-med);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dropzone::after {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      border: 1px solid rgba(56, 189, 248, 0.32);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition-fast);
+    }
+
+    .dropzone.dragover {
+      border-color: rgba(56, 189, 248, 0.92);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5), 0 0 0 10px rgba(56, 189, 248, 0.2), 0 24px 60px rgba(8, 47, 73, 0.85);
+      transform: translateY(-1px);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(56, 189, 248, 0.38), transparent 60%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.98));
+    }
+
+    .dropzone.dragover::after {
+      opacity: 1;
+    }
+
+    .drop-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .drop-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 30% 10%, #e0f2fe, #38bdf8),
+        radial-gradient(circle at 140% 200%, #a5b4fc, #4f46e5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0b1220;
+      box-shadow:
+        0 0 0 1px rgba(15, 23, 42, 0.9),
+        0 12px 24px rgba(8, 47, 73, 0.95);
+      flex-shrink: 0;
+    }
+
+    .drop-icon span {
+      font-size: 20px;
+    }
+
+    .drop-text-main {
+      font-size: 14px;
+      font-weight: 510;
+      color: #e5e7eb;
+    }
+
+    .drop-text-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .drop-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .drop-file-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 11px;
+      color: #cbd5f5;
+    }
+
+    .chip {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+    }
+
+    .chip-soft {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #bae6fd;
+    }
+
+    .drop-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .button {
+      border: none;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 510;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+      font-family: var(--font-ui);
+    }
+
+    .button-primary {
+      background: linear-gradient(135deg, #38bdf8, #4f46e5);
+      color: #0b1220;
+      box-shadow:
+        0 0 0 1px rgba(15, 23, 42, 0.95),
+        0 16px 35px rgba(8, 47, 73, 0.9);
+    }
+
+    .button-primary:hover {
+      transform: translateY(-0.5px) translateZ(0);
+      box-shadow:
+        0 0 0 1px rgba(15, 23, 42, 0.98),
+        0 20px 40px rgba(8, 47, 73, 0.95);
+      filter: brightness(1.05);
+    }
+
+    .button-ghost {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: #e5e7eb;
+    }
+
+    .button-ghost:hover {
+      background: rgba(15, 23, 42, 1);
+      transform: translateY(-0.5px);
+      border-color: rgba(148, 163, 184, 0.9);
+    }
+
+    .button:disabled {
+      opacity: 0.45;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .button-icon {
+      width: 15px;
+      height: 15px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.96);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .status-bar {
+      margin-top: 16px;
+      padding: 10px 11px;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #bae6fd, #38bdf8);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.6), 0 0 14px rgba(56, 189, 248, 0.9);
+      flex-shrink: 0;
+    }
+
+    .status-label {
+      font-size: 11px;
+      color: #cbd5f5;
+    }
+
+    .status-value {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #e5e7eb;
+    }
+
+    .status-right {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .status-tag {
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.96);
+      font-size: 10px;
+      color: #cbd5f5;
+    }
+
+    .status-tag-accent {
+      border-color: rgba(56, 189, 248, 0.8);
+      background: rgba(15, 23, 42, 0.98);
+      color: #bae6fd;
+    }
+
+    .layout-right {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .side-card {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.98));
+      border-radius: 22px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 16px 16px 14px;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(16px) saturate(150%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .side-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.25), transparent 55%),
+        radial-gradient(circle at 0% 100%, rgba(129, 140, 248, 0.22), transparent 55%);
+      mix-blend-mode: soft-light;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .side-card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .side-title {
+      font-size: 14px;
+      font-weight: 560;
+      margin-bottom: 4px;
+    }
+
+    .side-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .side-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 4px 0;
+    }
+
+    .side-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .side-value {
+      font-size: 11px;
+      color: #e5e7eb;
+      font-family: var(--font-mono);
+    }
+
+    .side-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .side-chip {
+      padding: 5px 7px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.96);
+      font-size: 10px;
+      color: #cbd5f5;
+    }
+
+    .side-chip strong {
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .side-footer {
+      margin-top: 10px;
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .side-footer code {
+      font-family: var(--font-mono);
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 8px;
+      padding: 2px 5px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: #e5e7eb;
+    }
+
+    .chats-card {
+      margin-top: 4px;
+      padding: 14px 14px 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.96);
+      max-height: 270px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chats-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .chats-list {
+      margin: 2px 0 0;
+      padding: 0;
+      list-style: none;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.8) transparent;
+    }
+
+    .chats-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chats-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chats-list::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.75);
+      border-radius: 999px;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 7px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
+      border: 1px solid transparent;
+      font-size: 11px;
+    }
+
+    .chat-item:hover {
+      background: rgba(15, 23, 42, 0.98);
+      transform: translateY(-0.5px);
+      border-color: rgba(148, 163, 184, 0.5);
+    }
+
+    .chat-item.selected {
+      background: rgba(15, 23, 42, 1);
+      border-color: rgba(56, 189, 248, 0.85);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.7);
+    }
+
+    .chat-main {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .chat-avatar {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 10%, #e0f2fe, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: #0b1220;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
+      flex-shrink: 0;
+    }
+
+    .chat-texts {
+      min-width: 0;
+    }
+
+    .chat-name {
+      font-size: 11px;
+      color: #e5e7eb;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      max-width: 140px;
+    }
+
+    .chat-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .chat-stats {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .chat-count {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: #cbd5f5;
+    }
+
+    .chat-type {
+      font-size: 9px;
+      padding: 2px 5px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: #cbd5f5;
+    }
+
+    .side-actions {
+      margin-top: 8px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .log-card {
+      margin-top: 4px;
+      padding: 10px 10px 9px;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.98);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      max-height: 130px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.8) transparent;
+    }
+
+    .log-card::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .log-card::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.75);
+      border-radius: 999px;
+    }
+
+    .error-text {
+      color: var(--danger);
+    }
+  </style>
+</head>
+<body>
+<main class="page">
+  <section class="card">
+    <div class="card-inner">
+      <header class="header">
+        <div class="title-block">
+          <div class="logo-row">
+            <div class="pill-dot"></div>
+            <span class="pill-text">Telegram → NotebookLM</span>
+          </div>
+          <div class="title">Локальный конвертер чатов Telegram</div>
+          <div class="subtitle">
+            Загрузите <code>result.json</code> из Telegram Desktop, выберите нужный чат и скачайте файл в формате,
+            удобном для LLM (NotebookLM, ChatGPT и др.). Поддерживаются экспорты с <strong>несколькими чатами</strong>.
+          </div>
+          <div class="badge-row">
+            <div class="badge"><strong>Локально</strong> · без отправки данных на сервер</div>
+            <div class="badge">Формат: <strong>Markdown / TXT</strong></div>
+          </div>
+        </div>
+        <div class="header-aside">
+          <div class="pill-status">
+            <span class="pill-status-dot"></span>
+            Обработка на вашей машине
+          </div>
+          <div class="hint-text">
+            Экспортируйте чаты из Telegram Desktop<br />
+            в формате <code>result.json</code>.
+          </div>
+        </div>
+      </header>
+
+      <div id="dropzone" class="dropzone">
+        <div class="drop-header">
+          <div class="drop-icon" aria-hidden="true"><span>☁️</span></div>
+          <div>
+            <div class="drop-text-main">Перетащите сюда <code>result.json</code></div>
+            <div class="drop-text-sub">или нажмите «Выбрать файл» ниже. Файл не покидает ваш компьютер.</div>
+          </div>
+        </div>
+        <div class="drop-footer">
+          <div class="drop-file-info">
+            <span class="chip">Поддерживаются все экспорты Telegram Desktop</span>
+            <span class="chip-soft" id="fileInfo">Файл не выбран</span>
+          </div>
+          <div class="drop-actions">
+            <button id="pickFileBtn" type="button" class="button button-ghost">
+              <span class="button-icon">+</span>
+              Выбрать файл
+            </button>
+          </div>
+        </div>
+        <input id="fileInput" type="file" class="file-input" accept=".json,application/json" />
+      </div>
+
+      <div class="status-bar" id="statusBar">
+        <div class="status-left">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span class="status-label">Статус:</span>
+          <span class="status-value" id="statusText">ожидаю файл Telegram</span>
+        </div>
+        <div class="status-right">
+          <span class="status-tag" id="chatsCountTag">чаты: 0</span>
+          <span class="status-tag status-tag-accent" id="messagesCountTag">сообщений: 0</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="layout-right">
+    <section class="side-card">
+      <div class="side-card-inner">
+        <div class="side-title">Чаты в экспорте</div>
+        <div class="side-subtitle">Выберите чат для конвертации или создайте файлы сразу для всех чатов.</div>
+
+        <div class="chats-card">
+          <div class="chats-header">
+            <span>Найденные чаты</span>
+            <span id="selectedChatLabel">ничего не выбрано</span>
+          </div>
+          <ul id="chatsList" class="chats-list"></ul>
+        </div>
+
+        <div class="side-actions">
+          <button id="exportSelectedBtn" type="button" class="button button-primary" disabled>
+            <span class="button-icon">⇩</span>
+            Скачать выбранный чат
+          </button>
+          <button id="exportAllBtn" type="button" class="button button-ghost" disabled>
+            <span class="button-icon">◎</span>
+            Скачать все чаты (zip)
+          </button>
+        </div>
+
+        <div class="side-footer">
+          <span>Формат структуры: <code>[YYYY-MM-DD HH:MM] Автор: текст</code></span>
+          <span>Оптимизировано под загрузку в NotebookLM / LLM</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="side-card">
+      <div class="side-card-inner">
+        <div class="side-title">Лог конвертации</div>
+        <div class="side-subtitle">Здесь будут появляться сообщения об ошибках и результатах.</div>
+        <div id="log" class="log-card"></div>
+      </div>
+    </section>
+  </aside>
+</main>
+
+<script>
+  (function () {
+    /**
+     * Состояние приложения
+     */
+    let rawData = null;
+    let chats = [];
+    let selectedChatIndex = null;
+
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("fileInput");
+    const pickFileBtn = document.getElementById("pickFileBtn");
+    const fileInfoEl = document.getElementById("fileInfo");
+    const statusTextEl = document.getElementById("statusText");
+    const chatsCountTag = document.getElementById("chatsCountTag");
+    const messagesCountTag = document.getElementById("messagesCountTag");
+    const chatsListEl = document.getElementById("chatsList");
+    const selectedChatLabel = document.getElementById("selectedChatLabel");
+    const exportSelectedBtn = document.getElementById("exportSelectedBtn");
+    const exportAllBtn = document.getElementById("exportAllBtn");
+    const logEl = document.getElementById("log");
+
+    function log(message, isError) {
+      const time = new Date().toLocaleTimeString();
+      const prefix = isError ? "[Ошибка]" : "[OK]";
+      const line = time + " " + prefix + " " + message + "\\n";
+      logEl.textContent += line;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function setStatus(text) {
+      statusTextEl.textContent = text;
+    }
+
+    function normalizeText(textField) {
+      if (typeof textField === "string") {
+        return textField;
+      }
+      if (Array.isArray(textField)) {
+        return textField
+          .map(function (part) {
+            if (typeof part === "string") return part;
+            if (part && typeof part === "object") {
+              return part.text || "";
+            }
+            return "";
+          })
+          .join("");
+      }
+      return "";
+    }
+
+    function formatDate(msg) {
+      if (msg.date_unixtime) {
+        var ts = parseInt(msg.date_unixtime, 10);
+        if (!isNaN(ts)) {
+          try {
+            var d = new Date(ts * 1000);
+            var y = d.getFullYear();
+            var m = String(d.getMonth() + 1).padStart(2, "0");
+            var day = String(d.getDate()).padStart(2, "0");
+            var hh = String(d.getHours()).padStart(2, "0");
+            var mm = String(d.getMinutes()).padStart(2, "0");
+            // формат как в примере: [01.09.2023 12:19]
+            return day + "." + m + "." + y + " " + hh + ":" + mm;
+          } catch (e) {
+            // fallback ниже
+          }
+        }
+      }
+      if (msg.date && typeof msg.date === "string") {
+        // ожидаем формат 2023-09-01T12:19:00
+        var s = msg.date.trim();
+        var parts = s.split("T");
+        if (parts.length === 2) {
+          var dPart = parts[0]; // 2023-09-01
+          var tPart = parts[1]; // 12:19:00
+          var dPieces = dPart.split("-");
+          var tPieces = tPart.split(":");
+          if (dPieces.length === 3 && tPieces.length >= 2) {
+            var y2 = dPieces[0];
+            var m2 = dPieces[1];
+            var day2 = dPieces[2];
+            var hh2 = tPieces[0];
+            var mm2 = tPieces[1];
+            return day2 + "." + m2 + "." + y2 + " " + hh2 + ":" + mm2;
+          }
+        }
+        return s.replace("T", " ").slice(0, 16);
+      }
+      return "";
+    }
+
+    function sanitizeFileName(name) {
+      return (name || "chat")
+        .replace(/[<>:"/\\\\|?*]+/g, "_")
+        .replace(/\\s+/g, " ")
+        .trim() || "chat";
+    }
+
+    function countMessages(messages) {
+      if (!Array.isArray(messages)) return 0;
+      return messages.filter(function (m) {
+        if (!m || m.type !== "message") return false;
+        var t = normalizeText(m.text || "");
+        return t && t.trim().length > 0;
+      }).length;
+    }
+
+    function parseTelegramJson(obj) {
+      if (!obj || !obj.chats || !Array.isArray(obj.chats.list)) {
+        throw new Error("Не найдена структура chats.list в JSON.");
+      }
+      var list = obj.chats.list;
+      var result = [];
+
+      list.forEach(function (chat, idx) {
+        if (!chat || !Array.isArray(chat.messages)) {
+          // пропускаем элементы без messages, чтобы не ломаться как notebookrix
+          return;
+        }
+        var total = Array.isArray(chat.messages) ? chat.messages.length : 0;
+        var useful = countMessages(chat.messages);
+        if (useful === 0) {
+          return;
+        }
+
+        result.push({
+          index: idx,
+          id: chat.id,
+          name: chat.name || chat.title || (chat.type + "_" + chat.id),
+          type: chat.type || "chat",
+          messages: chat.messages,
+          totalMessages: total,
+          usefulMessages: useful
+        });
+      });
+
+      if (result.length === 0) {
+        throw new Error("В файле не найдено ни одного чата с сообщениями.");
+      }
+
+      return result;
+    }
+
+    function renderChatsList() {
+      chatsListEl.innerHTML = "";
+      var totalMessages = 0;
+      chats.forEach(function (c) {
+        totalMessages += c.usefulMessages;
+      });
+      chatsCountTag.textContent = "чаты: " + chats.length;
+      messagesCountTag.textContent = "сообщений: " + totalMessages;
+
+      chats.forEach(function (chat, idx) {
+        var li = document.createElement("li");
+        li.className = "chat-item" + (selectedChatIndex === idx ? " selected" : "");
+        li.dataset.index = idx;
+
+        var main = document.createElement("div");
+        main.className = "chat-main";
+
+        var avatar = document.createElement("div");
+        avatar.className = "chat-avatar";
+        avatar.textContent = (chat.name || "?").trim().charAt(0).toUpperCase();
+
+        var texts = document.createElement("div");
+        texts.className = "chat-texts";
+
+        var nameEl = document.createElement("div");
+        nameEl.className = "chat-name";
+        nameEl.textContent = chat.name;
+
+        var meta = document.createElement("div");
+        meta.className = "chat-meta";
+        meta.textContent = "id: " + chat.id;
+
+        texts.appendChild(nameEl);
+        texts.appendChild(meta);
+
+        main.appendChild(avatar);
+        main.appendChild(texts);
+
+        var stats = document.createElement("div");
+        stats.className = "chat-stats";
+
+        var count = document.createElement("div");
+        count.className = "chat-count";
+        count.textContent = chat.usefulMessages + " msg";
+
+        var type = document.createElement("div");
+        type.className = "chat-type";
+        type.textContent = chat.type || "chat";
+
+        stats.appendChild(count);
+        stats.appendChild(type);
+
+        li.appendChild(main);
+        li.appendChild(stats);
+
+        li.addEventListener("click", function () {
+          selectedChatIndex = idx;
+          updateSelectionState();
+        });
+
+        chatsListEl.appendChild(li);
+      });
+
+      if (selectedChatIndex == null && chats.length > 0) {
+        selectedChatIndex = 0;
+      }
+      updateSelectionState();
+    }
+
+    function updateSelectionState() {
+      var items = chatsListEl.querySelectorAll(".chat-item");
+      items.forEach(function (li) {
+        var idx = parseInt(li.dataset.index, 10);
+        if (idx === selectedChatIndex) {
+          li.classList.add("selected");
+        } else {
+          li.classList.remove("selected");
+        }
+      });
+
+      if (selectedChatIndex != null && chats[selectedChatIndex]) {
+        selectedChatLabel.textContent = "выбрано: " + chats[selectedChatIndex].name;
+        exportSelectedBtn.disabled = false;
+      } else {
+        selectedChatLabel.textContent = "ничего не выбрано";
+        exportSelectedBtn.disabled = true;
+      }
+
+      exportAllBtn.disabled = chats.length === 0;
+    }
+
+    function buildChatText(chat) {
+      var lines = [];
+      lines.push("# Диалог: " + chat.name);
+      lines.push("");
+      lines.push("_id: " + chat.id + ", type: " + (chat.type || "chat") + "_");
+      lines.push("");
+
+      chat.messages.forEach(function (msg) {
+        if (!msg || msg.type !== "message") return;
+        var text = normalizeText(msg.text || "");
+        if (!text || !text.trim()) return;
+        var dt = formatDate(msg);
+        var author = msg.from || msg.from_id || "Unknown";
+        lines.push("[" + dt + "] " + author + ":");
+        lines.push(text);
+        lines.push("");
+      });
+
+      return lines.join("\\n");
+    }
+
+    function downloadTextFile(filename, content) {
+      var blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportSelectedChat() {
+      if (selectedChatIndex == null || !chats[selectedChatIndex]) {
+        log("Чат не выбран", true);
+        return;
+      }
+      var chat = chats[selectedChatIndex];
+      var content = buildChatText(chat);
+      var safe = sanitizeFileName(chat.name);
+      var filename = safe + ".md";
+      downloadTextFile(filename, content);
+      log("Скачан файл для чата «" + chat.name + "» → " + filename);
+    }
+
+    function exportAllChatsZip() {
+      // Чтобы не тянуть внешние библиотеки, делаем простой вариант:
+      // если чатов немного, скачиваем их по очереди; при большом числе удобнее JSZip.
+      if (chats.length === 0) {
+        log("Нет чатов для экспорта", true);
+        return;
+      }
+      if (chats.length > 12) {
+        log("Много чатов (" + chats.length + "). ZIP без сторонних библиотек не собираю, скачиваю последовательно.", true);
+      }
+      chats.forEach(function (chat) {
+        var content = buildChatText(chat);
+        var safe = sanitizeFileName(chat.name);
+        var filename = safe + ".md";
+        downloadTextFile(filename, content);
+      });
+      log("Запущена выгрузка всех чатов (" + chats.length + " файлов).");
+    }
+
+    function resetState() {
+      rawData = null;
+      chats = [];
+      selectedChatIndex = null;
+      chatsListEl.innerHTML = "";
+      selectedChatLabel.textContent = "ничего не выбрано";
+      chatsCountTag.textContent = "чаты: 0";
+      messagesCountTag.textContent = "сообщений: 0";
+      exportSelectedBtn.disabled = true;
+      exportAllBtn.disabled = true;
+      setStatus("ожидаю файл Telegram");
+    }
+
+    function handleParsedJson(obj, fileName) {
+      try {
+        chats = parseTelegramJson(obj);
+        rawData = obj;
+        setStatus("файл загружен: " + fileName);
+        fileInfoEl.textContent = "Файл: " + fileName + " · чатов: " + chats.length;
+        log("Успешно разобран файл " + fileName + ". Найдено чатов: " + chats.length + ".", false);
+        renderChatsList();
+      } catch (e) {
+        resetState();
+        setStatus("ошибка при чтении JSON");
+        fileInfoEl.textContent = "Ошибка: " + e.message;
+        log(e.message, true);
+      }
+    }
+
+    function handleFile(file) {
+      if (!file) return;
+      if (!/\\.json$/i.test(file.name)) {
+        log("Ожидается файл .json, получено: " + file.name, true);
+      }
+
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        try {
+          var text = event.target.result;
+          var obj = JSON.parse(text);
+          handleParsedJson(obj, file.name);
+        } catch (e) {
+          resetState();
+          setStatus("ошибка парсинга JSON");
+          fileInfoEl.textContent = "Ошибка парсинга: " + e.message;
+          log("Ошибка парсинга JSON: " + e.message, true);
+        }
+      };
+      reader.onerror = function () {
+        resetState();
+        setStatus("ошибка чтения файла");
+        fileInfoEl.textContent = "Ошибка чтения файла";
+        log("Ошибка чтения файла.", true);
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    dropzone.addEventListener("click", function (e) {
+      if (e.target === pickFileBtn) return;
+      fileInput.click();
+    });
+
+    pickFileBtn.addEventListener("click", function () {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", function (e) {
+      var file = e.target.files && e.target.files[0];
+      if (!file) return;
+      handleFile(file);
+    });
+
+    ["dragenter", "dragover"].forEach(function (eventName) {
+      dropzone.addEventListener(eventName, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(function (eventName) {
+      dropzone.addEventListener(eventName, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove("dragover");
+      });
+    });
+
+    dropzone.addEventListener("drop", function (e) {
+      var dt = e.dataTransfer;
+      if (!dt || !dt.files || !dt.files.length) return;
+      var file = dt.files[0];
+      handleFile(file);
+    });
+
+    exportSelectedBtn.addEventListener("click", exportSelectedChat);
+    exportAllBtn.addEventListener("click", exportAllChatsZip);
+
+    log("Готов к работе. Загрузите result.json из Telegram Desktop.");
+  })();
+</script>
+</body>
+</html>
+
