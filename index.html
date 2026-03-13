@@ -97,7 +97,6 @@
   <section class="mt-6 rounded-[28px] border border-[#D1D1D6] bg-white/90 px-5 py-6 shadow-[0_26px_70px_rgba(0,0,0,0.10)] backdrop-blur-md">
     <!-- Заголовок -->
     <header class="text-center space-y-3">
-      <div class="text-xs font-semibold tracking-[0.18em] text-[#8E8E93] uppercase">Telegram export → умный формат</div>
       <h1 class="text-3xl sm:text-[32px] font-semibold tracking-tight text-[#1C1C1E]">
         <span class="font-bold text-[#1C1C1E]">Telegram</span>
         <span class="px-1 text-brandBlue">→</span>
@@ -107,9 +106,6 @@
       </h1>
       <p class="text-sm sm:text-base text-[#3A3A3C]">
         Конвертируйте ваши данные в интеллектуальный формат.
-      </p>
-      <p class="text-xs sm:text-sm text-[#8E8E93]">
-        Оптимизировано для нейросетевого анализа и загрузки в NotebookLM / LLM.
       </p>
     </header>
 
@@ -152,16 +148,6 @@
             Файл не выбран
           </span>
         </div>
-        <div class="flex gap-2">
-          <button
-            id="pickFileBtn"
-            type="button"
-            class="inline-flex items-center gap-2 rounded-full border border-[#C7C7CC] bg-white px-3 py-1.5 text-xs font-medium text-[#1C1C1E] shadow-sm transition hover:border-[#A1A1AA] hover:bg-[#F2F2F7]"
-          >
-            <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#E5E5EA] text-[11px]">+</span>
-            Выбрать файл
-          </button>
-        </div>
       </div>
 
       <input id="fileInput" type="file" class="hidden" accept=".json,application/json" />
@@ -196,30 +182,24 @@
       </div>
 
       <!-- Основная кнопка скачивания -->
-      <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-3">
-          <button
-            id="exportMainBtn"
-            type="button"
-            class="inline-flex items-center gap-2 rounded-full bg-[#1C1C1E] px-4 py-2 text-xs font-medium text-white shadow-md transition enabled:hover:bg-black/90 disabled:opacity-40"
-            disabled
-          >
-            <span class="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[11px]">
-              ⇩
-            </span>
-            Скачать Markdown
-          </button>
-        </div>
-        <p class="text-[11px] text-[#8E8E93]">
-          После загрузки <code class="rounded bg-[#E5E5EA] px-1 py-0.5 text-[10px] font-mono text-[#1C1C1E] align-middle">result.json</code>
-          будет создан один или несколько .md файлов с вашими чатами.
-        </p>
+      <div class="mt-4 flex justify-center">
+        <button
+          id="exportMainBtn"
+          type="button"
+          class="hidden inline-flex items-center gap-2 rounded-full bg-[#1C1C1E] px-4 py-2 text-xs font-medium text-white shadow-md transition enabled:hover:bg-black/90 disabled:opacity-40"
+          disabled
+        >
+          <span class="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[11px]">
+            ⇩
+          </span>
+          Скачать Markdown
+        </button>
       </div>
     </div>
   </section>
 
   <!-- Блоки информации и лог -->
-  <section class="mt-8 grid gap-4 lg:grid-cols-2">
+  <section class="mt-8 grid gap-4 lg:grid-cols-2 hidden">
     <!-- Чаты в экспорте -->
     <section class="rounded-2xl border border-[#D1D1D6] bg-white/80 p-4 shadow-sm backdrop-blur-sm">
       <div class="flex items-baseline justify-between gap-2">
@@ -295,18 +275,6 @@
       </svg>
       <span>Все данные обрабатываются локально. Приватность гарантирована.</span>
     </div>
-
-    <button
-      type="button"
-      class="inline-flex items-center gap-2 rounded-full bg-[#1C1C1E] px-4 py-2 text-xs font-medium text-white shadow-md transition hover:bg-black/90"
-      onclick="window.open('https://t.me/rixai', '_blank')"
-    >
-      <!-- Lucide-style send icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 stroke-[1.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4.5 20 12 4 19.5 6.5 12 4 4.5z" />
-      </svg>
-      <span>Мой Telegram RixAI</span>
-    </button>
   </footer>
 </main>
 
@@ -322,7 +290,6 @@
 
     const dropzone = document.getElementById("dropzone");
     const fileInput = document.getElementById("fileInput");
-    const pickFileBtn = document.getElementById("pickFileBtn");
     const fileInfoEl = document.getElementById("fileInfo");
     const statusTextEl = document.getElementById("statusText");
     const chatsCountTag = document.getElementById("chatsCountTag");
@@ -694,7 +661,10 @@
       messagesCountTag.textContent = "сообщений: 0";
       exportSelectedBtn.disabled = true;
       exportAllBtn.disabled = true;
-      if (exportMainBtn) exportMainBtn.disabled = true;
+      if (exportMainBtn) {
+        exportMainBtn.disabled = true;
+        exportMainBtn.classList.add("hidden");
+      }
       setStatus("ожидаю файл из Telegram");
     }
 
@@ -707,7 +677,12 @@
         fileInfoEl.textContent = "Файл: " + fileName + " · чатов: " + chats.length;
         log("Файл " + fileName + " успешно прочитан. Найдено чатов: " + chats.length + ".", false);
         renderChatsList();
-        if (exportMainBtn) exportMainBtn.disabled = chats.length === 0;
+        if (exportMainBtn) {
+          exportMainBtn.disabled = chats.length === 0;
+          if (chats.length > 0) {
+            exportMainBtn.classList.remove("hidden");
+          }
+        }
       } catch (e) {
         resetState();
         setStatus("ошибка при чтении JSON");
@@ -744,12 +719,7 @@
       reader.readAsText(file, "utf-8");
     }
 
-    dropzone.addEventListener("click", function (e) {
-      if (e.target === pickFileBtn) return;
-      fileInput.click();
-    });
-
-    pickFileBtn.addEventListener("click", function () {
+    dropzone.addEventListener("click", function () {
       fileInput.click();
     });
 
