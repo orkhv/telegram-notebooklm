@@ -4,711 +4,71 @@
   <meta charset="utf-8" />
   <title>Telegram → NotebookLM (локально)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: [
+              '-apple-system',
+              'BlinkMacSystemFont',
+              'system-ui',
+              '"SF Pro Text"',
+              '"SF Pro Display"',
+              'sans-serif'
+            ]
+          },
+          colors: {
+            brandBlue: '#007AFF'
+          }
+        }
+      }
+    };
+  </script>
   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
-
-    :root {
-      color-scheme: dark;
-      --bg: #050816;
-      --bg-elevated: #080c1a;
-      --accent: #38bdf8;
-      --accent-soft: rgba(56, 189, 248, 0.12);
-      --accent-strong: rgba(56, 189, 248, 0.18);
-      --border-subtle: rgba(148, 163, 184, 0.38);
-      --text-main: #e5e7eb;
-      --text-muted: #9ca3af;
-      --danger: #f97373;
-      --radius-lg: 18px;
-      --shadow-soft: 0 26px 60px rgba(15, 23, 42, 0.75);
-      --shadow-subtle: 0 1px 0 rgba(15, 23, 42, 0.9);
-      --input-bg: rgba(15, 23, 42, 0.96);
-      --transition-fast: 0.16s ease-out;
-      --transition-med: 0.24s ease-out;
-      --font-ui: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
-      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-
     * {
       box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: var(--font-ui);
-      color: var(--text-main);
-      background:
-        radial-gradient(circle at top left, rgba(56, 189, 248, 0.25), transparent 55%),
-        radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.18), transparent 55%),
-        radial-gradient(circle at top right, rgba(236, 72, 153, 0.18), transparent 55%),
-        linear-gradient(150deg, #020617, #020617 55%, #020617 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 16px;
     }
 
-    .page {
-      width: 100%;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 0 4px;
+    .bg-grid {
+      background-color: #F2F2F7;
+      background-image:
+        linear-gradient(to right, #D1D1D6 1px, transparent 1px),
+        linear-gradient(to bottom, #D1D1D6 1px, transparent 1px);
+      background-size: 48px 48px;
     }
 
-    @media (max-width: 640px) {
-      body {
-        padding: 20px 12px;
-      }
-
-      .page {
-        max-width: 100%;
-      }
+    .badge-dot {
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.16);
     }
 
-    .card {
-      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
-      border-radius: 26px;
-      box-shadow:
-        0 32px 80px rgba(15, 23, 42, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-      border: 1px solid rgba(15, 23, 42, 1);
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(22px);
-    }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.2), transparent 55%),
-        radial-gradient(circle at 100% 0, rgba(236, 72, 153, 0.16), transparent 55%);
-      opacity: 0.7;
-      mix-blend-mode: soft-light;
-    }
-
-    .card-inner {
-      position: relative;
-      z-index: 1;
-      padding: 28px 26px 24px;
-    }
-
-    .header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 18px;
-      margin-bottom: 22px;
-    }
-
-    .title-block {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .logo-row {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.98);
-      border: 1px solid rgba(51, 65, 85, 0.9);
-      width: fit-content;
-    }
-
-    .pill-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e;
-    }
-
-    .pill-text {
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #cbd5f5;
-    }
-
-    .title {
-      font-size: 28px;
-      font-weight: 650;
-      letter-spacing: -0.02em;
-      color: #f9fafb;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      line-height: 1.5;
-      color: var(--text-muted);
-      max-width: 560px;
-    }
-
-    .badge-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 10px;
-    }
-
-    .badge {
-      font-size: 11px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(51, 65, 85, 0.9);
-      background: rgba(15, 23, 42, 0.98);
-      color: #e5e7eb;
-    }
-
-    .badge strong {
-      font-weight: 600;
-    }
-
-    .header-aside {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 6px;
-    }
-
-    .pill-status {
-      font-size: 11px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: rgba(22, 163, 74, 0.08);
-      color: #bbf7d0;
-      border: 1px solid rgba(34, 197, 94, 0.4);
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .pill-status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: #22c55e;
-    }
-
-    .hint-text {
-      font-size: 11px;
-      color: var(--text-muted);
-      text-align: right;
-    }
-
-    .hint-text code {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      background: rgba(15, 23, 42, 0.98);
-      border-radius: 6px;
-      padding: 2px 5px;
-      border: 1px solid rgba(51, 65, 85, 0.9);
-      color: #e5e7eb;
+    .status-dot-glow {
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.12);
     }
 
     .dropzone {
-      margin-top: 8px;
-      padding: 26px 22px 20px;
-      border-radius: 20px;
-      border: 1px dashed rgba(148, 163, 184, 0.85);
-      background: radial-gradient(circle at top left, rgba(15, 23, 42, 1), #020617);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      cursor: pointer;
       transition:
-        border-color var(--transition-fast),
-        background-color var(--transition-fast),
-        transform var(--transition-fast);
-      position: relative;
-      overflow: hidden;
+        border-color 0.18s ease-out,
+        background-color 0.18s ease-out,
+        box-shadow 0.18s ease-out,
+        transform 0.18s ease-out;
     }
 
     .dropzone.dragover {
-      border-color: var(--accent);
-      background:
-        radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), #020617);
-      transform: translateY(-1.5px);
-    }
-
-    .drop-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .drop-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 1);
-      border: 1px solid rgba(51, 65, 85, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #e5e7eb;
-      flex-shrink: 0;
-      font-size: 20px;
-    }
-
-    .drop-text-main {
-      font-size: 15px;
-      font-weight: 500;
-      color: #e5e7eb;
-    }
-
-    .drop-text-sub {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .drop-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-
-    .drop-file-info {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      font-size: 11px;
-      color: #cbd5f5;
-    }
-
-    .chip {
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 1);
-      border: 1px solid rgba(51, 65, 85, 0.9);
-    }
-
-    .chip-soft {
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: rgba(8, 47, 73, 0.85);
-      border: 1px solid rgba(56, 189, 248, 0.5);
-      color: #bae6fd;
-    }
-
-    .drop-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .button {
-      border-radius: 999px;
-      padding: 7px 14px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition:
-        background-color var(--transition-fast),
-        color var(--transition-fast),
-        box-shadow var(--transition-fast),
-        transform var(--transition-fast),
-        border-color var(--transition-fast);
-      font-family: var(--font-ui);
-      border: 1px solid transparent;
-      background: transparent;
-      color: #e5e7eb;
-    }
-
-    .button-primary {
-      background: var(--accent);
-      color: #020617;
-      border-color: transparent;
-      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.85);
-    }
-
-    .button-primary:hover {
-      background: #0ea5e9;
-      transform: translateY(-0.5px);
-      box-shadow: 0 18px 32px rgba(15, 23, 42, 0.95);
-    }
-
-    .button-ghost {
-      background: transparent;
-      border-color: rgba(75, 85, 99, 1);
-      color: #e5e7eb;
-    }
-
-    .button-ghost:hover {
-      background: #020617;
-      border-color: rgba(148, 163, 184, 0.9);
-      transform: translateY(-0.5px);
-    }
-
-    .button:disabled {
-      opacity: 0.45;
-      cursor: default;
-      box-shadow: none;
-      transform: none;
-    }
-
-    .button-icon {
-      width: 15px;
-      height: 15px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 1);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-    }
-
-    .file-input {
-      display: none;
-    }
-
-    .status-bar {
-      margin-top: 22px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.96);
-      border: 1px solid rgba(31, 41, 55, 0.95);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .status-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e;
-      flex-shrink: 0;
-    }
-
-    .status-label {
-      font-size: 11px;
-      color: #d1d5db;
-    }
-
-    .status-value {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: #e5e7eb;
-    }
-
-    .status-right {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .status-tag {
-      padding: 2px 7px;
-      border-radius: 999px;
-      border: 1px solid rgba(55, 65, 81, 1);
-      background: #020617;
-      font-size: 10px;
-      color: #e5e7eb;
-      font-family: var(--font-mono);
-    }
-
-    .status-tag-accent {
-      border-color: rgba(56, 189, 248, 0.8);
-      background: #020617;
-      color: #bae6fd;
-    }
-
-    .layout-right {
-      display: none;
-    }
-
-    .primary-action {
-      margin-top: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: flex-start;
-    }
-
-    .primary-action-btn {
-      padding-inline: 18px;
-      padding-block: 9px;
-      font-size: 13px;
-    }
-
-    .primary-action-hint {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .side-card {
-      background: #020617;
-      border-radius: 16px;
-      border: 1px solid rgba(31, 41, 55, 1);
-      padding: 14px 14px 12px;
-      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.9);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .side-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.12), transparent 55%);
-      opacity: 0.4;
-      pointer-events: none;
-    }
-
-    .side-card-inner {
-      position: relative;
-      z-index: 1;
-    }
-
-    .side-title {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 3px;
-      color: #f9fafb;
-    }
-
-    .side-subtitle {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-    }
-
-    .side-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin: 4px 0;
-    }
-
-    .side-label {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .side-value {
-      font-size: 11px;
-      color: #e5e7eb;
-      font-family: var(--font-mono);
-    }
-
-    .side-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
-      margin-top: 6px;
-    }
-
-    .side-chip {
-      padding: 5px 7px;
-      border-radius: 12px;
-      border: 1px solid rgba(55, 65, 81, 1);
-      background: #020617;
-      font-size: 10px;
-      color: #e5e7eb;
-    }
-
-    .side-chip strong {
-      font-weight: 600;
-    }
-
-    .side-footer {
-      margin-top: 10px;
-      font-size: 10px;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .side-footer code {
-      font-family: var(--font-mono);
-      background: #020617;
-      border-radius: 6px;
-      padding: 2px 5px;
-      border: 1px solid rgba(55, 65, 81, 1);
-      color: #e5e7eb;
-    }
-
-    .chats-card {
-      margin-top: 4px;
-      padding: 12px 12px 9px;
-      border-radius: 12px;
-      border: 1px solid rgba(31, 41, 55, 1);
-      background: #020617;
-      max-height: 260px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .chats-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .chats-list {
-      margin: 2px 0 0;
-      padding: 0;
-      list-style: none;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(75, 85, 99, 1) transparent;
-    }
-
-    .chats-list::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .chats-list::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .chats-list::-webkit-scrollbar-thumb {
-      background: rgba(75, 85, 99, 1);
-      border-radius: 999px;
-    }
-
-    .chat-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 6px 6px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition:
-        background-color var(--transition-fast),
-        border-color var(--transition-fast),
-        transform var(--transition-fast);
-      border: 1px solid transparent;
-      font-size: 11px;
-    }
-
-    .chat-item:hover {
-      background: #020617;
-      border-color: rgba(55, 65, 81, 1);
-      transform: translateY(-0.5px);
-    }
-
-    .chat-item.selected {
-      background: rgba(15, 23, 42, 1);
-      border-color: var(--accent);
-    }
-
-    .chat-main {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .chat-avatar {
-      width: 18px;
-      height: 18px;
-      border-radius: 999px;
-      background: #020617;
-      border: 1px solid rgba(55, 65, 81, 1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      font-weight: 600;
-      color: #e5e7eb;
-      flex-shrink: 0;
-    }
-
-    .chat-texts {
-      min-width: 0;
-    }
-
-    .chat-name {
-      font-size: 11px;
-      color: #e5e7eb;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      max-width: 140px;
-    }
-
-    .chat-meta {
-      font-size: 10px;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .chat-stats {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 2px;
-      flex-shrink: 0;
-    }
-
-    .chat-count {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: #e5e7eb;
-    }
-
-    .chat-type {
-      font-size: 9px;
-      padding: 2px 5px;
-      border-radius: 999px;
-      background: #020617;
-      border: 1px solid rgba(55, 65, 81, 1);
-      color: #9ca3af;
-    }
-
-    .side-actions {
-      margin-top: 8px;
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
+      border-color: #007AFF;
+      background-color: #F9FAFB;
+      box-shadow: 0 22px 55px rgba(15, 15, 20, 0.25);
+      transform: translateY(-2px);
     }
 
     .log-card {
-      margin-top: 4px;
-      padding: 9px 9px 8px;
-      border-radius: 10px;
-      border: 1px solid rgba(31, 41, 55, 1);
-      background: #020617;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-muted);
-      max-height: 130px;
-      overflow-y: auto;
       white-space: pre-wrap;
       scrollbar-width: thin;
-      scrollbar-color: rgba(75, 85, 99, 1) transparent;
     }
 
     .log-card::-webkit-scrollbar {
@@ -716,134 +76,235 @@
     }
 
     .log-card::-webkit-scrollbar-thumb {
-      background: rgba(75, 85, 99, 1);
+      background: rgba(160, 160, 170, 0.8);
       border-radius: 999px;
-    }
-
-    .error-text {
-      color: var(--danger);
     }
   </style>
 </head>
-<body>
-<main class="page">
-  <section class="card">
-    <div class="card-inner">
-      <header class="header">
-        <div class="title-block">
-          <div class="logo-row">
-            <div class="pill-dot"></div>
-            <span class="pill-text">Telegram → NotebookLM</span>
-          </div>
-          <div class="title">Локальный конвертер чатов Telegram</div>
-          <div class="subtitle">
-            Загрузите файл <code>result.json</code> из Telegram Desktop — на выходе получите
-            <strong>Markdown с историей чатов</strong>, при необходимости автоматически разбитый на несколько файлов.
-          </div>
-          <div class="badge-row">
-            <div class="badge"><strong>Локально</strong> · ничего не уходит в сеть</div>
-            <div class="badge">Результат: <strong>.md файлы</strong></div>
-          </div>
-        </div>
-        <div class="header-aside">
-          <div class="pill-status">
-            <span class="pill-status-dot"></span>
-            Конвертация только на вашем компьютере
-          </div>
-          <div class="hint-text">
-            В Telegram Desktop экспортируйте чат<br />
-            и сохраните файл <code>result.json</code>.
-          </div>
-        </div>
-      </header>
+<body class="bg-grid min-h-screen flex items-center justify-center px-4 py-8 text-[#1C1C1E] antialiased">
+<main class="w-full max-w-3xl">
+  <div class="flex flex-col items-center text-center gap-6">
+    <!-- Верхний индикатор локальной обработки -->
+    <div class="inline-flex items-center gap-2 rounded-full border border-[#D1D1D6] bg-white/70 px-3 py-1 text-[11px] font-medium tracking-[0.16em] uppercase text-[#3A3A3C] backdrop-blur-sm">
+      <span class="relative flex h-2 w-2 items-center justify-center">
+        <span class="h-1.5 w-1.5 rounded-full bg-brandBlue badge-dot"></span>
+      </span>
+      <span>локальная обработка</span>
+    </div>
 
-      <div id="dropzone" class="dropzone">
-        <div class="drop-header">
-          <div class="drop-icon" aria-hidden="true"><span>☁️</span></div>
-          <div>
-            <div class="drop-text-main">Перетащите сюда <code>result.json</code></div>
-            <div class="drop-text-sub">или нажмите «Выбрать файл» ниже. Файл не покидает ваш компьютер.</div>
-          </div>
-        </div>
-        <div class="drop-footer">
-          <div class="drop-file-info">
-            <span class="chip">Поддерживаются все экспорты Telegram Desktop</span>
-            <span class="chip-soft" id="fileInfo">Файл не выбран</span>
-          </div>
-          <div class="drop-actions">
-            <button id="pickFileBtn" type="button" class="button button-ghost">
-              <span class="button-icon">+</span>
-              Выбрать файл
-            </button>
-          </div>
-        </div>
-        <input id="fileInput" type="file" class="file-input" accept=".json,application/json" />
-      </div>
+    <!-- Заголовок -->
+    <header class="space-y-3">
+      <div class="text-xs font-semibold tracking-[0.18em] text-[#8E8E93] uppercase">Telegram export → умный формат</div>
+      <h1 class="text-3xl sm:text-[32px] font-semibold tracking-tight text-[#1C1C1E]">
+        <span class="font-bold text-[#1C1C1E]">Telegram</span>
+        <span class="px-1 text-brandBlue">→</span>
+        <span class="bg-gradient-to-r from-[#1C1C1E] to-[#8E8E93] bg-clip-text text-transparent font-semibold">
+          NotebookLM
+        </span>
+      </h1>
+      <p class="text-sm sm:text-base text-[#3A3A3C]">
+        Конвертируйте ваши данные в интеллектуальный формат.
+      </p>
+      <p class="text-xs sm:text-sm text-[#8E8E93]">
+        Оптимизировано для нейросетевого анализа и загрузки в NotebookLM / LLM.
+      </p>
+    </header>
+  </div>
 
-      <div class="status-bar" id="statusBar">
-        <div class="status-left">
-          <span class="status-dot" aria-hidden="true"></span>
-          <span class="status-label">Статус:</span>
-          <span class="status-value" id="statusText">ожидаю файл из Telegram</span>
+  <!-- Основной блок с дропзоной -->
+  <section class="mt-8 space-y-4">
+    <div
+      id="dropzone"
+      class="dropzone group cursor-pointer rounded-[24px] border border-dashed border-[#C7C7CC] bg-white/80 px-5 py-5 shadow-[0_18px_45px_rgba(0,0,0,0.06)] backdrop-blur-sm"
+    >
+      <div class="flex items-center gap-4">
+        <div
+          class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[#F2F2F7] text-[#1C1C1E] shadow-sm"
+          aria-hidden="true"
+        >
+          <!-- Lucide-style upload icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 stroke-[1.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4" />
+          </svg>
         </div>
-        <div class="status-right">
-          <span class="status-tag" id="chatsCountTag">чаты: 0</span>
-          <span class="status-tag status-tag-accent" id="messagesCountTag">сообщений: 0</span>
+        <div class="space-y-1 text-left">
+          <div class="text-[15px] font-semibold text-[#1C1C1E]">
+            Перетащите <code class="rounded bg-[#E5E5EA] px-1 py-0.5 text-[11px] font-mono text-[#1C1C1E] align-middle">result.json</code> сюда
+          </div>
+          <div class="text-xs text-[#8E8E93]">
+            или нажмите для выбора файла из экспорта Telegram Desktop.
+          </div>
         </div>
       </div>
 
-      <div class="primary-action">
-        <button id="exportMainBtn" type="button" class="button button-primary primary-action-btn" disabled>
-          <span class="button-icon">⇩</span>
+      <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-wrap items-center gap-2 text-[11px] text-[#3A3A3C]">
+          <span class="rounded-full bg-[#E5E5EA] px-3 py-1">
+            Поддерживаются все экспорты Telegram Desktop
+          </span>
+          <span
+            id="fileInfo"
+            class="rounded-full bg-white px-3 py-1 text-[#8E8E93] ring-1 ring-inset ring-[#D1D1D6]"
+          >
+            Файл не выбран
+          </span>
+        </div>
+        <div class="flex gap-2">
+          <button
+            id="pickFileBtn"
+            type="button"
+            class="inline-flex items-center gap-2 rounded-full border border-[#C7C7CC] bg-white px-3 py-1.5 text-xs font-medium text-[#1C1C1E] shadow-sm transition hover:border-[#A1A1AA] hover:bg-[#F2F2F7]"
+          >
+            <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#E5E5EA] text-[11px]">+</span>
+            Выбрать файл
+          </button>
+        </div>
+      </div>
+
+      <input id="fileInput" type="file" class="hidden" accept=".json,application/json" />
+    </div>
+
+    <!-- Статус обработки -->
+    <div
+      id="statusBar"
+      class="flex flex-col gap-2 rounded-full border border-[#D1D1D6] bg-white/90 px-4 py-2 text-[11px] text-[#8E8E93] shadow-sm backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="status-dot-glow inline-flex h-2 w-2 flex-shrink-0 rounded-full bg-brandBlue"></span>
+        <span class="text-[#3A3A3C]">Статус:</span>
+        <span id="statusText" class="font-mono text-[#1C1C1E]">
+          ожидаю файл из Telegram
+        </span>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span
+          id="chatsCountTag"
+          class="rounded-full border border-[#D1D1D6] bg-[#F2F2F7] px-2.5 py-1 font-mono text-[10px] text-[#3A3A3C]"
+        >
+          чаты: 0
+        </span>
+        <span
+          id="messagesCountTag"
+          class="rounded-full border border-brandBlue/40 bg-brandBlue/10 px-2.5 py-1 font-mono text-[10px] text-brandBlue"
+        >
+          сообщений: 0
+        </span>
+      </div>
+    </div>
+
+    <!-- Основная кнопка скачивания -->
+    <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3">
+        <button
+          id="exportMainBtn"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-full bg-[#1C1C1E] px-4 py-2 text-xs font-medium text-white shadow-md transition enabled:hover:bg-black/90 disabled:opacity-40"
+          disabled
+        >
+          <span class="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[11px]">
+            ⇩
+          </span>
           Скачать Markdown
         </button>
-        <div class="primary-action-hint">
-          После загрузки <code>result.json</code> будет создан один или несколько .md файлов с вашими чатами.
-        </div>
       </div>
+      <p class="text-[11px] text-[#8E8E93]">
+        После загрузки <code class="rounded bg-[#E5E5EA] px-1 py-0.5 text-[10px] font-mono text-[#1C1C1E] align-middle">result.json</code>
+        будет создан один или несколько .md файлов с вашими чатами.
+      </p>
     </div>
   </section>
 
-  <aside class="layout-right">
-    <section class="side-card">
-      <div class="side-card-inner">
-        <div class="side-title">Чаты в экспорте</div>
-        <div class="side-subtitle">Все чаты будут собраны в один поток сообщений. При большом объёме текста файл делится на части по ~300&nbsp;000 слов.</div>
-
-        <div class="chats-card">
-          <div class="chats-header">
-            <span>Найденные чаты</span>
-            <span id="selectedChatLabel">ничего не выбрано</span>
-          </div>
-          <ul id="chatsList" class="chats-list"></ul>
+  <!-- Блоки информации и лог -->
+  <section class="mt-8 grid gap-4 lg:grid-cols-2">
+    <!-- Чаты в экспорте -->
+    <section class="rounded-2xl border border-[#D1D1D6] bg-white/80 p-4 shadow-sm backdrop-blur-sm">
+      <div class="flex items-baseline justify-between gap-2">
+        <div>
+          <h2 class="text-sm font-semibold text-[#1C1C1E]">Чаты в экспорте</h2>
+          <p class="mt-1 text-[11px] text-[#8E8E93]">
+            Все чаты собираются в единый поток сообщений. При большом объёме текста файл делится на части по ~300 000 слов.
+          </p>
         </div>
+        <span
+          id="selectedChatLabel"
+          class="rounded-full bg-[#F2F2F7] px-2 py-1 text-[10px] text-[#8E8E93]"
+        >
+          ничего не выбрано
+        </span>
+      </div>
 
-        <div class="side-actions">
-          <button id="exportSelectedBtn" type="button" class="button button-primary" disabled>
-            <span class="button-icon">⇩</span>
-            Скачать единый файл
-          </button>
-          <button id="exportAllBtn" type="button" class="button button-ghost" disabled style="display:none">
-            <span class="button-icon">◎</span>
-            Скачать все чаты (zip)
-          </button>
-        </div>
+      <div class="mt-3 max-h-56 overflow-hidden rounded-xl border border-[#E5E5EA] bg-[#FAFAFC]">
+        <ul id="chatsList" class="chats-list divide-y divide-[#E5E5EA]"></ul>
+      </div>
 
-        <div class="side-footer">
-          <span>Формат структуры: <code>[YYYY-MM-DD HH:MM] Автор: текст</code></span>
-          <span>Оптимизировано под загрузку в NotebookLM / LLM</span>
-        </div>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <button
+          id="exportSelectedBtn"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-full bg-[#1C1C1E] px-3 py-1.5 text-[11px] font-medium text-white shadow-sm transition enabled:hover:bg-black/90 disabled:opacity-40"
+          disabled
+        >
+          <span class="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px]">
+            ⇩
+          </span>
+          Скачать единый файл
+        </button>
+        <button
+          id="exportAllBtn"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-full border border-[#D1D1D6] bg-white px-3 py-1.5 text-[11px] font-medium text-[#1C1C1E] shadow-sm transition hover:border-[#A1A1AA] hover:bg-[#F2F2F7]"
+          disabled
+          style="display:none"
+        >
+          <span class="flex h-4 w-4 items-center justify-center rounded-full bg-[#E5E5EA] text-[10px]">
+            ◎
+          </span>
+          Скачать все чаты (zip)
+        </button>
       </div>
     </section>
 
-    <section class="side-card">
-      <div class="side-card-inner">
-        <div class="side-title">Лог конвертации</div>
-        <div class="side-subtitle">Здесь будут появляться сообщения об ошибках и результатах.</div>
-        <div id="log" class="log-card"></div>
+    <!-- Лог конвертации -->
+    <section class="rounded-2xl border border-[#D1D1D6] bg-white/80 p-4 shadow-sm backdrop-blur-sm">
+      <div class="flex items-baseline justify-between gap-2">
+        <div>
+          <h2 class="text-sm font-semibold text-[#1C1C1E]">Лог конвертации</h2>
+          <p class="mt-1 text-[11px] text-[#8E8E93]">
+            Сообщения о ходе обработки и возможных ошибках.
+          </p>
+        </div>
       </div>
+      <div
+        id="log"
+        class="log-card mt-3 h-40 overflow-y-auto rounded-xl border border-[#E5E5EA] bg-[#FAFAFC] p-3 text-[11px] font-mono text-[#8E8E93]"
+      ></div>
     </section>
-  </aside>
+  </section>
+
+  <!-- Приватность и контакт -->
+  <footer class="mt-8 space-y-4 text-center">
+    <div class="flex items-center justify-center gap-2 text-xs text-[#3A3A3C]">
+      <!-- Lucide-style lock icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 stroke-[1.5] text-[#3A3A3C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <rect x="5" y="11" width="14" height="9" rx="2" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 11V8a3 3 0 0 1 6 0v3" />
+      </svg>
+      <span>Все данные обрабатываются локально. Приватность гарантирована.</span>
+    </div>
+
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 rounded-full bg-[#1C1C1E] px-4 py-2 text-xs font-medium text-white shadow-md transition hover:bg-black/90"
+      onclick="window.open('https://t.me/rixai', '_blank')"
+    >
+      <!-- Lucide-style send icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 stroke-[1.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4.5 20 12 4 19.5 6.5 12 4 4.5z" />
+      </svg>
+      <span>Мой Telegram RixAI</span>
+    </button>
+  </footer>
 </main>
 
 <script>
@@ -1329,4 +790,3 @@
 </script>
 </body>
 </html>
-
