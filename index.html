@@ -115,21 +115,21 @@
     <!-- Основной блок с дропзоной -->
       <div class="mt-6 space-y-4 text-left">
       <div
-      id="dropzone"
-      class="dropzone group cursor-pointer rounded-[24px] border border-dashed border-[#547792]/60 bg-brandSurface px-5 py-5 shadow-[0_18px_45px_rgba(26,50,99,0.20)]"
-    >
-      <div class="flex items-center gap-4">
+        id="dropzone"
+        class="dropzone group cursor-pointer rounded-[24px] border border-dashed border-[#547792]/60 bg-brandSurface px-6 py-7 shadow-[0_18px_45px_rgba(26,50,99,0.20)] flex flex-col items-center text-center gap-4"
+      >
         <div
-          class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[#1A3263] text-[#E8E2DB] shadow-sm border border-[#547792]"
+          class="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1A3263] text-[#E8E2DB] shadow-sm border border-[#547792]"
           aria-hidden="true"
         >
           <!-- Lucide-style upload icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 stroke-[1.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 stroke-[1.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4" />
           </svg>
         </div>
-        <div class="space-y-1 text-left">
+
+        <div class="space-y-2">
           <div class="text-[15px] font-semibold text-[#1A3263]">
             Перетащите <code class="rounded bg-[#E8E2DB] px-1 py-0.5 text-[11px] font-mono text-[#1A3263] align-middle">result.json</code> сюда
           </div>
@@ -137,20 +137,13 @@
             или нажмите для выбора файла из экспорта Telegram Desktop.
           </div>
         </div>
-      </div>
 
-      <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex flex-wrap items-center gap-2 text-[11px] text-[#547792]">
-          <span class="rounded-full bg-[#1A3263] px-3 py-1 text-[#E8E2DB]">
-            Поддерживаются все экспорты Telegram Desktop
-          </span>
-          <span
-            id="fileInfo"
-            class="rounded-full bg-brandSurface px-3 py-1 text-[#1A3263] ring-1 ring-inset ring-[#547792]/50"
-          >
-            Файл не выбран
-          </span>
+        <div class="mt-1 text-[11px] text-[#547792]">
+          Поддерживаются все экспорты Telegram Desktop
         </div>
+
+        <!-- скрытый элемент для совместимости с логикой JS -->
+        <span id="fileInfo" class="hidden"></span>
       </div>
 
       <input id="fileInput" type="file" class="hidden" accept=".json,application/json" />
