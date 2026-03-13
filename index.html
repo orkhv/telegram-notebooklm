@@ -20,7 +20,10 @@
             ]
           },
           colors: {
-            brandBlue: '#007AFF'
+            brandDeep: '#1A3263',
+            brandMuted: '#547792',
+            brandAccent: '#FAB95B',
+            brandSurface: '#E8E2DB'
           }
         }
       }
@@ -36,19 +39,19 @@
     }
 
     .bg-grid {
-      background-color: #F2F2F7;
+      background-color: #E8E2DB;
       background-image:
-        linear-gradient(to right, #D1D1D6 1px, transparent 1px),
-        linear-gradient(to bottom, #D1D1D6 1px, transparent 1px);
+        linear-gradient(to right, rgba(26, 50, 99, 0.07) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(26, 50, 99, 0.07) 1px, transparent 1px);
       background-size: 48px 48px;
     }
 
     .badge-dot {
-      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.16);
+      box-shadow: 0 0 0 4px rgba(250, 185, 91, 0.35);
     }
 
     .status-dot-glow {
-      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.12);
+      box-shadow: 0 0 0 4px rgba(250, 185, 91, 0.28);
     }
 
     .dropzone {
@@ -60,9 +63,9 @@
     }
 
     .dropzone.dragover {
-      border-color: #007AFF;
-      background-color: #F9FAFB;
-      box-shadow: 0 22px 55px rgba(15, 15, 20, 0.25);
+      border-color: #FAB95B;
+      background-color: #E8E2DB;
+      box-shadow: 0 22px 55px rgba(26, 50, 99, 0.35);
       transform: translateY(-2px);
     }
 
@@ -81,43 +84,43 @@
     }
   </style>
 </head>
-<body class="bg-grid min-h-screen flex items-center justify-center px-4 py-8 text-[#1C1C1E] antialiased">
+<body class="bg-grid min-h-screen flex items-center justify-center px-4 py-8 text-[##1A3263] antialiased">
 <main class="w-full max-w-3xl">
   <div class="flex flex-col items-center text-center gap-4">
     <!-- Верхний индикатор локальной обработки -->
-    <div class="inline-flex items-center gap-2 rounded-full border border-[#D1D1D6] bg-white/80 px-3 py-1 text-[11px] font-medium tracking-[0.16em] uppercase text-[#3A3A3C] backdrop-blur-sm shadow-sm">
+    <div class="inline-flex items-center gap-2 rounded-full border border-[#547792] bg-brandSurface/90 px-3 py-1 text-[11px] font-medium tracking-[0.16em] uppercase text-[#547792] backdrop-blur-sm shadow-sm">
       <span class="relative flex h-2 w-2 items-center justify-center">
-        <span class="h-1.5 w-1.5 rounded-full bg-brandBlue badge-dot"></span>
+        <span class="h-1.5 w-1.5 rounded-full bg-brandAccent badge-dot"></span>
       </span>
       <span>локальная обработка</span>
     </div>
   </div>
 
   <!-- Карточка с заголовком и дропзоной -->
-  <section class="mt-6 rounded-[28px] border border-[#D1D1D6] bg-white/90 px-5 py-6 shadow-[0_26px_70px_rgba(0,0,0,0.10)] backdrop-blur-md">
+  <section class="mt-6 rounded-[28px] border border-[#547792]/40 bg-brandSurface px-5 py-6 shadow-[0_26px_70px_rgba(26,50,99,0.25)] backdrop-blur-md">
     <!-- Заголовок -->
     <header class="text-center space-y-3">
-      <h1 class="text-3xl sm:text-[32px] font-semibold tracking-tight text-[#1C1C1E]">
-        <span class="font-bold text-[#1C1C1E]">Telegram</span>
-        <span class="px-1 text-brandBlue">→</span>
-        <span class="bg-gradient-to-r from-[#1C1C1E] to-[#8E8E93] bg-clip-text text-transparent font-semibold">
+      <h1 class="text-3xl sm:text-[32px] font-semibold tracking-tight text-[#1A3263]">
+        <span class="font-bold text-[#1A3263]">Telegram</span>
+        <span class="px-1 text-brandAccent">→</span>
+        <span class="bg-gradient-to-r from-[#1A3263] to-[#547792] bg-clip-text text-transparent font-semibold">
           NotebookLM
         </span>
       </h1>
-      <p class="text-sm sm:text-base text-[#3A3A3C]">
+      <p class="text-sm sm:text-base text-[#547792]">
         Конвертируйте ваши данные в интеллектуальный формат.
       </p>
     </header>
 
     <!-- Основной блок с дропзоной -->
-    <div class="mt-6 space-y-4">
+      <div class="mt-6 space-y-4 text-left">
       <div
       id="dropzone"
-      class="dropzone group cursor-pointer rounded-[24px] border border-dashed border-[#C7C7CC] bg-[#F9FAFC] px-5 py-5 shadow-[0_18px_45px_rgba(0,0,0,0.06)]"
+      class="dropzone group cursor-pointer rounded-[24px] border border-dashed border-[#547792]/60 bg-brandSurface px-5 py-5 shadow-[0_18px_45px_rgba(26,50,99,0.20)]"
     >
       <div class="flex items-center gap-4">
         <div
-          class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[#F2F2F7] text-[#1C1C1E] shadow-sm border border-[#E5E5EA]"
+          class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[#1A3263] text-[#E8E2DB] shadow-sm border border-[#547792]"
           aria-hidden="true"
         >
           <!-- Lucide-style upload icon -->
@@ -127,23 +130,23 @@
           </svg>
         </div>
         <div class="space-y-1 text-left">
-          <div class="text-[15px] font-semibold text-[#1C1C1E]">
-            Перетащите <code class="rounded bg-[#E5E5EA] px-1 py-0.5 text-[11px] font-mono text-[#1C1C1E] align-middle">result.json</code> сюда
+          <div class="text-[15px] font-semibold text-[#1A3263]">
+            Перетащите <code class="rounded bg-[#E8E2DB] px-1 py-0.5 text-[11px] font-mono text-[#1A3263] align-middle">result.json</code> сюда
           </div>
-          <div class="text-xs text-[#8E8E93]">
+          <div class="text-xs text-[#547792]">
             или нажмите для выбора файла из экспорта Telegram Desktop.
           </div>
         </div>
       </div>
 
       <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex flex-wrap items-center gap-2 text-[11px] text-[#3A3A3C]">
-          <span class="rounded-full bg-[#E5E5EA] px-3 py-1">
+        <div class="flex flex-wrap items-center gap-2 text-[11px] text-[#547792]">
+          <span class="rounded-full bg-[#1A3263] px-3 py-1 text-[#E8E2DB]">
             Поддерживаются все экспорты Telegram Desktop
           </span>
           <span
             id="fileInfo"
-            class="rounded-full bg-white px-3 py-1 text-[#8E8E93] ring-1 ring-inset ring-[#D1D1D6]"
+            class="rounded-full bg-brandSurface px-3 py-1 text-[#1A3263] ring-1 ring-inset ring-[#547792]/50"
           >
             Файл не выбран
           </span>
@@ -156,25 +159,25 @@
       <!-- Статус обработки -->
       <div
         id="statusBar"
-        class="flex flex-col gap-2 rounded-full border border-[#E5E5EA] bg-white px-4 py-2 text-[11px] text-[#8E8E93] shadow-sm sm:flex-row sm:items-center sm:justify-between"
+        class="flex flex-col gap-2 rounded-full border border-[#547792]/40 bg-brandSurface px-4 py-2 text-[11px] text-[#547792] shadow-sm sm:flex-row sm:items-center sm:justify-between"
       >
         <div class="flex flex-wrap items-center gap-2">
-          <span class="status-dot-glow inline-flex h-2 w-2 flex-shrink-0 rounded-full bg-brandBlue"></span>
-          <span class="text-[#3A3A3C]">Статус:</span>
-          <span id="statusText" class="font-mono text-[#1C1C1E]">
+          <span class="status-dot-glow inline-flex h-2 w-2 flex-shrink-0 rounded-full bg-brandAccent"></span>
+          <span class="text-[#1A3263]">Статус:</span>
+          <span id="statusText" class="font-mono text-[#1A3263]">
             ожидаю файл из Telegram
           </span>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <span
             id="chatsCountTag"
-            class="rounded-full border border-[#D1D1D6] bg-[#F2F2F7] px-2.5 py-1 font-mono text-[10px] text-[#3A3A3C]"
+            class="rounded-full border border-[#547792]/40 bg-brandSurface px-2.5 py-1 font-mono text-[10px] text-[#1A3263]"
           >
             чаты: 0
           </span>
           <span
             id="messagesCountTag"
-            class="rounded-full border border-brandBlue/40 bg-brandBlue/10 px-2.5 py-1 font-mono text-[10px] text-brandBlue"
+            class="rounded-full border border-brandAccent/60 bg-brandAccent/20 px-2.5 py-1 font-mono text-[10px] text-[#1A3263]"
           >
             сообщений: 0
           </span>
@@ -186,10 +189,10 @@
         <button
           id="exportMainBtn"
           type="button"
-          class="hidden inline-flex items-center gap-2 rounded-full bg-[#1C1C1E] px-4 py-2 text-xs font-medium text-white shadow-md transition enabled:hover:bg-black/90 disabled:opacity-40"
+          class="hidden inline-flex items-center gap-2 rounded-full bg-[#1A3263] px-4 py-2 text-xs font-medium text-brandSurface shadow-md transition enabled:hover:bg-[#122145] disabled:opacity-40"
           disabled
         >
-          <span class="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[11px]">
+          <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#547792] text-[11px]">
             ⇩
           </span>
           Скачать Markdown
@@ -201,23 +204,23 @@
   <!-- Блоки информации и лог -->
   <section class="mt-8 grid gap-4 lg:grid-cols-2 hidden">
     <!-- Чаты в экспорте -->
-    <section class="rounded-2xl border border-[#D1D1D6] bg-white/80 p-4 shadow-sm backdrop-blur-sm">
+    <section class="rounded-2xl border border-[#547792]/30 bg-brandSurface p-4 shadow-sm backdrop-blur-sm">
       <div class="flex items-baseline justify-between gap-2">
         <div>
-          <h2 class="text-sm font-semibold text-[#1C1C1E]">Чаты в экспорте</h2>
-          <p class="mt-1 text-[11px] text-[#8E8E93]">
+          <h2 class="text-sm font-semibold text-[#1A3263]">Чаты в экспорте</h2>
+          <p class="mt-1 text-[11px] text-[#547792]">
             Все чаты собираются в единый поток сообщений. При большом объёме текста файл делится на части по ~300 000 слов.
           </p>
         </div>
         <span
           id="selectedChatLabel"
-          class="rounded-full bg-[#F2F2F7] px-2 py-1 text-[10px] text-[#8E8E93]"
+          class="rounded-full bg-brandSurface px-2 py-1 text-[10px] text-[#547792]"
         >
           ничего не выбрано
         </span>
       </div>
 
-      <div class="mt-3 max-h-56 overflow-hidden rounded-xl border border-[#E5E5EA] bg-[#FAFAFC]">
+      <div class="mt-3 max-h-56 overflow-hidden rounded-xl border border-[#547792]/20 bg-brandSurface">
         <ul id="chatsList" class="chats-list divide-y divide-[#E5E5EA]"></ul>
       </div>
 
@@ -225,10 +228,10 @@
         <button
           id="exportSelectedBtn"
           type="button"
-          class="inline-flex items-center gap-2 rounded-full bg-[#1C1C1E] px-3 py-1.5 text-[11px] font-medium text-white shadow-sm transition enabled:hover:bg-black/90 disabled:opacity-40"
+          class="inline-flex items-center gap-2 rounded-full bg-[#1A3263] px-3 py-1.5 text-[11px] font-medium text-brandSurface shadow-sm transition enabled:hover:bg-[#122145] disabled:opacity-40"
           disabled
         >
-          <span class="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px]">
+          <span class="flex h-4 w-4 items-center justify-center rounded-full bg-[#547792] text-[10px]">
             ⇩
           </span>
           Скачать единый файл
@@ -236,7 +239,7 @@
         <button
           id="exportAllBtn"
           type="button"
-          class="inline-flex items-center gap-2 rounded-full border border-[#D1D1D6] bg-white px-3 py-1.5 text-[11px] font-medium text-[#1C1C1E] shadow-sm transition hover:border-[#A1A1AA] hover:bg-[#F2F2F7]"
+          class="inline-flex items-center gap-2 rounded-full border border-[#547792]/40 bg-brandSurface px-3 py-1.5 text-[11px] font-medium text-[#1A3263] shadow-sm transition hover:border-[#547792] hover:bg-[#E8E2DB]"
           disabled
           style="display:none"
         >
@@ -249,27 +252,27 @@
     </section>
 
     <!-- Лог конвертации -->
-    <section class="rounded-2xl border border-[#D1D1D6] bg-white/80 p-4 shadow-sm backdrop-blur-sm">
+    <section class="rounded-2xl border border-[#547792]/30 bg-brandSurface p-4 shadow-sm backdrop-blur-sm">
       <div class="flex items-baseline justify-between gap-2">
         <div>
-          <h2 class="text-sm font-semibold text-[#1C1C1E]">Лог конвертации</h2>
-          <p class="mt-1 text-[11px] text-[#8E8E93]">
+          <h2 class="text-sm font-semibold text-[#1A3263]">Лог конвертации</h2>
+          <p class="mt-1 text-[11px] text-[#547792]">
             Сообщения о ходе обработки и возможных ошибках.
           </p>
         </div>
       </div>
       <div
         id="log"
-        class="log-card mt-3 h-40 overflow-y-auto rounded-xl border border-[#E5E5EA] bg-[#FAFAFC] p-3 text-[11px] font-mono text-[#8E8E93]"
+        class="log-card mt-3 h-40 overflow-y-auto rounded-xl border border-[#547792]/20 bg-brandSurface p-3 text-[11px] font-mono text-[#547792]"
       ></div>
     </section>
   </section>
 
   <!-- Приватность и контакт -->
   <footer class="mt-8 space-y-4 text-center">
-    <div class="flex items-center justify-center gap-2 text-xs text-[#3A3A3C]">
+    <div class="flex items-center justify-center gap-2 text-xs text-[#547792]">
       <!-- Lucide-style lock icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 stroke-[1.5] text-[#3A3A3C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 stroke-[1.5] text-[#547792]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <rect x="5" y="11" width="14" height="9" rx="2" />
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 11V8a3 3 0 0 1 6 0v3" />
       </svg>
